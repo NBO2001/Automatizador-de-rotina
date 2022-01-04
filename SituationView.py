@@ -33,6 +33,7 @@ class SituationView:
     def situation(self, text):
         self.loc['text'] = text
         self.loc.update_idletasks()
+        self.update()
 
     def ext(self):
         self.inst.destroy()
@@ -40,3 +41,7 @@ class SituationView:
     def buttonExit(self):
         self.exit.pack()
         self.exit.update_idletasks()
+
+    def update(self):
+        self.inst.update()
+    

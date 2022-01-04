@@ -25,7 +25,7 @@ def add_item(instance,data, app=False):
     driving_to_box(instance, data['index'])
 
     element_is_load(instance,"//mat-card/div/div[3]/mat-form-field[3]/div/div[1]/div/mat-select")
-    add_folders(instance,data['boxs'])
+    add_folders(instance,data['boxs'],app)
 
     table_conteinner = instance.driver.find_element_by_xpath("//app-pack-itens/mat-card/div/div[2]/mat-table")
 

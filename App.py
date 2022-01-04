@@ -2,7 +2,7 @@ from tkinter import *
 from GlobalConfig import GlobalConfig
 from login import Login
 from send_registers import send_rg_in_base
-from utils import convert_url, file_is_exists, create_json, reading_json
+from utils import convert_url, file_is_exists, create_json, insert_arq_log, reading_json
 from reading_xml import update_xlsx
 from file_monitoration import plan_is_change
 from create_boxs import add_item
@@ -11,7 +11,7 @@ from file_monitoration import folder_is_change
 from upload import conf_file_upload, up_files
 from SituationView import SituationView
 import speedtest
-
+from time import time
 
 # Code ..
 
@@ -31,18 +31,18 @@ class App:
                 self.boxs = False
 
             try:    
-                self.change, foldrs = folder_is_change()
+                change, self.foldrs = folder_is_change()
             except:
-                self.change = False
+                change = False
 
-            if not self.boxs or plan_is_change(self.conf) or self.change:
+            if not self.boxs or plan_is_change(self.conf) or change:
 
                 self.app.situation("Esperando página carregar ...")
             
                 try:
                     self.lg = Login(self.conf.getUrlBase(),self.conf.getUser(),self.conf.getPassword(), self.conf.getClient(), True, self.app)
                 except Exception as erro:
-                    print(f'Error: {erro.__cause__}')
+                    insert_arq_log(f'{erro}')
                     self.app.situation(f'Error: {erro.__cause__}')
                     self.app.buttonExit()
                 else:
@@ -58,13 +58,13 @@ class App:
                         self.box_change()
 
                     if plan_is_change(self.conf):
-                        self.plan_change(self)
+                        self.plan_change()
 
-                    if self.change:
-                        self.send_rg(self)
+                    if change:
+                        self.send_rg()
                 except Exception as erro:
 
-                    print(f'Error: {erro.__cause__}')
+                    insert_arq_log(f'{erro}')
                     self.app.situation(f'Error: {erro.__cause__}')
                     self.app.situation(f'Error: {erro.__cause__}')
                     self.lg.driver.close()
@@ -87,45 +87,70 @@ class App:
         
 
     def plan_change(self):
-        self.app.situation("Lendo arquivos de configuração ...")
-        dt = reading_json(convert_url('./config/boxs'))
-        
-        if len(dt):
-            dt = dt[(len(dt))-1]
-            dt['boxs'] = dt['boxs'][(len(dt['boxs']))-1]
-        else:
-            dt =  {}
 
-        self.app.situation("Preparando tudo para o envio ...")
-        upl = update_xlsx(dt)
-        
-        self.app.situation(f'Preparando para enviar {len(upl)} items')
-        for up in self.upl:
+        try:
+            self.app.situation("Lendo arquivos de configuração ...")
+            dt = reading_json(convert_url('./config/boxs'))
             
-            self.app.situation(f'Inserindo a caixa: {up["index"]}')
-            add_item(self.lg, up, self.app)
+            if len(dt):
+                dt = dt[(len(dt))-1]
+                dt['boxs'] = dt['boxs'][(len(dt['boxs']))-1]
+            else:
+                dt =  {}
+
+            self.app.situation("Preparando tudo para o envio ...")
+            upl = update_xlsx(dt)
             
+            self.app.situation(f'Preparando para enviar {len(upl)} items')
+            for up in upl:
                 
-        self.app.situation(f'Mapiando as informações ...')    
-        self.conf.mapping_boxs(self.lg, self.app)
-        self.app.situation(f'Finalizado')   
+                self.app.situation(f'Inserindo a caixa: {up["index"]}')
+                add_item(self.lg, up, self.app)
+        except Exception as error:
+            insert_arq_log(f'{error}')
+        finally:       
+            self.app.situation(f'Mapiando as informações ...')    
+            self.conf.mapping_boxs(self.lg, self.app)
+            self.app.situation(f'Finalizado')   
 
     def send_rg(self):
-        self.app.situation(f'Preparando para adicionar registros no sistema ...')   
-        send_rg_in_base(self.lg, self.foldrs, self.app)
-        while True:
-            self.app.situation(f'Configurando arquivo para upload...')   
-            conf_file_upload()
-            self.app.situation(f'Verificando velocidade da internet ... ')
-            st = speedtest.Speedtest() 
-            st.get_best_server()
-            bytes_val = st.upload()
-            Megabits = bytes_val/1048576
-            MegaBytes = Megabits/8
-            self.app.situation(f'Velocidade da internet {MegaBytes:.2f}... ')
-            self.app.situation(f'Começando upload..')   
-            if up_files(self.lg, MegaBytes, self.app):
-                break
-    
-init = App()
-init.start()
+        self.app.situation(f'Preparando para adicionar registros no sistema ...')
+        try:   
+            send_rg_in_base(self.lg, self.foldrs, self.app)
+        except Exception as error:
+            insert_arq_log(f'{error}')
+            self.app.situation(f'Mapiando as informações ...')    
+            self.conf.mapping_boxs(self.lg, self.app)
+            self.app.situation(f'Finalizado')
+            self.lg.driver.close()
+            self.app.buttonExit()
+        else:
+            try:  
+                while True:
+                    self.app.situation(f'Configurando arquivo para upload...')   
+                    conf_file_upload()
+                    self.app.situation(f'Verificando velocidade da internet ... ')
+                    st = speedtest.Speedtest() 
+                    st.get_best_server()
+                    bytes_val = st.upload()
+                    Megabits = bytes_val/1048576
+                    MegaBytes = Megabits/8
+                    self.app.situation(f'Velocidade da internet {MegaBytes:.2f}... ')
+                    self.app.situation(f'Começando upload..')   
+                    if up_files(self.lg, MegaBytes, self.app):
+                        break
+            except Exception as error:
+                insert_arq_log(f'{error}')
+                self.app.situation(f'Mapiando as informações ...')    
+                self.conf.mapping_boxs(self.lg, self.app)
+                self.lg.driver.close()
+                self.app.buttonExit()
+
+try:
+    start = time()    
+    init = App()
+    init.start()
+except Exception as error:
+    insert_arq_log(f'{error}')
+finally:
+    insert_arq_log(f'Execucao em: {(((time() - start))/60):.2f}m')

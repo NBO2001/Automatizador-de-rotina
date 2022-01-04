@@ -51,7 +51,7 @@ class Login:
     def authentication_validation(self):
    
         try:
-            WebDriverWait(self.driver, 300).until(
+            WebDriverWait(self.driver, 500).until(
                 EC.presence_of_element_located((By.XPATH, "//app-root/app-main/div/mat-sidenav-container/mat-sidenav/div[1]"))
             )
             
@@ -63,7 +63,7 @@ class Login:
     
     def is_loaded(self):
         try:
-            WebDriverWait(self.driver, 40).until(
+            WebDriverWait(self.driver, 500).until(
                 EC.presence_of_element_located((By.XPATH, "//app-root/app-login/div/mat-card/form/div/button/span"))
             )
             

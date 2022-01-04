@@ -76,14 +76,34 @@ def up_files(instance, speed, app=False):
 
                 input_file.send_keys(location)
 
-                app.situation(f'Enviando {control["name"]}... \n Velocidade da internet {speed:.2f} MB/S \nPrevisão de upload: {(time_item):.2f}s , aguarde ...')  if app else print(f'Enviando, previsão de upload em {time_wait}s , aguarde ...') 
-       
-                sleep(time_item)
+                # Timer
+                if time_item:
+                    staps = time_item/time_item
+                    while time_item:
+                        app.situation(f'Enviando {control["name"]}... \n Velocidade da internet {speed:.2f} MB/S \nPrevisão de upload: {(time_item):.2f}s , aguarde ...')  if app else print(f'Enviando, previsão de upload em {time_wait}s , aguarde ...') 
+                        
+                        sleep(staps)
+
+                        time_item = time_item - staps
+
+                        if time_item <= 0:
+                            break
             row +=1  
 
         time_wait = (time_wait/1048576)/speed
-        app.situation(f'Enviando id: {upl["id"]}... \n Velocidade da internet {speed:.2f} MB/S \nPrevisão de upload: {(time_wait/60):.2f}m , aguarde ...')  if app else print(f'Enviando, previsão de upload em {time_wait}s , aguarde ...') 
-        sleep(time_wait)
+        
+        if time_wait:
+            stps = time_wait/time_wait
+            while time_wait:
+
+                app.situation(f'Enviando id: {upl["id"]}... \n Velocidade da internet {speed:.2f} MB/S \nPrevisão de upload: {(time_wait/60):.2f}m , aguarde ...')  if app else print(f'Enviando, previsão de upload em {time_wait}s , aguarde ...') 
+                sleep(stps)
+
+                time_wait = time_wait - stps
+
+                if time_wait <= 0:
+                    break
+
         instance.driver.get(f'{instance.get_urlBase()}#/modules/home')
         sleep(1)
         instance.driver.get(f'{instance.get_urlBase()}{upl["link"]}')

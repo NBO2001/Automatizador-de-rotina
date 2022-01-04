@@ -13,6 +13,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from sys import platform
+from datetime import datetime
 
 def trim(value):
     try:
@@ -20,7 +21,7 @@ def trim(value):
     except:
         return value
 
-
+#Verifica se o arquivo existe
 def file_is_exists(location):
     return Path(location).is_file()
 
@@ -363,4 +364,16 @@ def alert_remove(instance):
             return True
         except:
             return False
+
+def insert_arq_log(texto):
+    
+    date = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    if file_is_exists(convert_url("./config/app.log")):
+        file = open(convert_url("./config/app.log"), 'a')
+        file.write(f'{date} : {texto} \n')
+        file.close()
+    else:
+        file = open(convert_url("./config/app.log"), 'w')
+        file.write(f'{date} : {texto} \n')
+        file.close()
                 
