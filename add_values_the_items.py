@@ -26,7 +26,7 @@ def get_id_the_folder(location):
         if location['index'] == box['index']:
             for bx in box['boxs']:
                 if bx['index'] == location['box']:
-                    link = bx['link'].split(separator())
+                    link = bx['link'].split("/")
                     return link[(len(link))-1], bx['link']
                     
 

@@ -1,6 +1,6 @@
 import os
 
-from utils import convert_url, reading_json, retun_md, verify_folders
+from utils import convert_url, reading_json, retun_md
 
 
 def plan_is_change(conf):

@@ -122,7 +122,7 @@ def up_files(instance, speed, app=False):
 
     if not len(list_up):
         app.situation("Pegando as informações das pastas ... ") if app else print("Pegando as informações das pastas ... ")
-        create_json(convert_url("./config/folders"), verify_folders())
+        create_json(convert_url("./config/folders"), verify_folders(convert_url('./')))
         return True
     else:
         return False  

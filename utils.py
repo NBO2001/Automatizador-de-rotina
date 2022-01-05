@@ -158,12 +158,14 @@ def driving_to_box(instance, code):
     sleep(1)
     Seach_Box(instance, code)
     sleep(1)
-    instance.driver.get(f'{instance.get_urlBase()}{get_link(instance)}')
+    link = get_link(instance)
+    instance.driver.get(f'{instance.get_urlBase()}{link}')
+    return link
 
 def add_folders(instance, boxs, app=False):
     input_code = instance.driver.find_element_by_xpath("//app-pack-itens/mat-card/div/div[1]/mat-form-field/div/div[1]/div/input")
     button_code = instance.driver.find_element_by_xpath("//app-pack-itens/mat-card/div/div[1]/div/button")
-
+    boxs_send = dict()
     for box in boxs:
         app.situation(f'Envindo a pasta: {box["index"]}') if app else print(f'Envindo a pasta: {box["index"]}') 
         input_code.send_keys(f'{trim(box["index"])}')
@@ -171,6 +173,9 @@ def add_folders(instance, boxs, app=False):
         sleep(1)
         input_code.clear()
         alert_remove(instance)
+        boxs_send[box["index"]] = []
+    
+    return boxs_send
 
 def add_values_in_dictionary(table):
     datas = list()

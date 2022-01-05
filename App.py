@@ -2,6 +2,7 @@ from tkinter import *
 from GlobalConfig import GlobalConfig
 from login import Login
 from send_registers import send_rg_in_base
+from undoing_change import undoing
 from utils import convert_url, file_is_exists, create_json, insert_arq_log, reading_json
 from reading_xml import update_xlsx
 from file_monitoration import plan_is_change
@@ -66,7 +67,6 @@ class App:
 
                     insert_arq_log(f'{erro}')
                     self.app.situation(f'Error: {erro.__cause__}')
-                    self.app.situation(f'Error: {erro.__cause__}')
                     self.lg.driver.close()
                     self.app.buttonExit()
 
@@ -87,31 +87,53 @@ class App:
         
 
     def plan_change(self):
-
+        self.isMapping = False
         try:
             self.app.situation("Lendo arquivos de configuração ...")
             dt = reading_json(convert_url('./config/boxs'))
             
-            if len(dt):
-                dt = dt[(len(dt))-1]
-                dt['boxs'] = dt['boxs'][(len(dt['boxs']))-1]
-            else:
-                dt =  {}
+            try:
+                if len(dt):
+                    dt = dt[(len(dt))-1]
+                    if len(dt['boxs']):
+                        try:
+                            dt['boxs'] = dt['boxs'][(len(dt['boxs']))-1]
+                        except Exception as error:
+                            insert_arq_log(f'App: Row 102 {error} ; Val: {dt}')
+                    else:
+                        dt['boxs'] = {
+                            "index" : False
+                        }
+                else:
+                    dt =  {}
+            except Exception as error:
+                insert_arq_log(f'App: Row 106: {error} ; Val: {dt}')
 
             self.app.situation("Preparando tudo para o envio ...")
-            upl = update_xlsx(dt)
+            try:
+                upl = update_xlsx(dt)
+            except Exception as error:
+                insert_arq_log(f'App: Row 115: {error}')
             
             self.app.situation(f'Preparando para enviar {len(upl)} items')
+
+            self.isMapping = True
+
             for up in upl:
-                
-                self.app.situation(f'Inserindo a caixa: {up["index"]}')
-                add_item(self.lg, up, self.app)
+
+                resul = add_item(self.lg, up, self.app)
+                if resul['Error']:
+                    insert_arq_log(f'App: Row 126: {resul}')
+                    undoing(self.lg,resul, self.app)
+                    break
+            
         except Exception as error:
-            insert_arq_log(f'{error}')
-        finally:       
-            self.app.situation(f'Mapiando as informações ...')    
-            self.conf.mapping_boxs(self.lg, self.app)
-            self.app.situation(f'Finalizado')   
+            insert_arq_log(f'App: Row 123: {error}')
+        finally:
+            if self.isMapping:       
+                self.app.situation(f'Mapiando as informações ...')    
+                self.conf.mapping_boxs(self.lg, self.app)
+                self.app.situation(f'Finalizado')   
 
     def send_rg(self):
         self.app.situation(f'Preparando para adicionar registros no sistema ...')

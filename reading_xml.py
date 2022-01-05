@@ -5,19 +5,21 @@ def get_end_values(instance, sheet, index):
     ws = instance[sheet]
 
     cells = 2
-    location = ""
+    location = 0
     while True:
 
         if ws[f'A{cells}'].value:
-            if trim( ws[f'A{cells}'].value) == index:
+            if index and trim( ws[f'A{cells}'].value) == index:
                 
                 location = cells-1
 
             cells = cells + 1
         else:
             break
-    
-    return index,location, (cells - 2)
+    if location:
+        return index,location, (cells - 2)
+    else:
+        return index,(cells - 3), (cells - 2)
 
 
 
@@ -31,12 +33,19 @@ def update_xlsx(ult_box):
     datas = list()
 
     try:
+
         indx,loc, cel = get_end_values(wb, 'Caixas', ult_box['index'])
-        indx2,loc2, cel2 = get_end_values(wb, 'Pastas', ult_box['boxs']['index'])
+        
     except:
         indx = ""
         loc = 0
         cel = 0
+    
+    try:
+
+        indx2,loc2, cel2 = get_end_values(wb, 'Pastas', ult_box['boxs']['index'])
+        
+    except:
         indx2 = ""
         loc2 = 0
         cel2 = 0

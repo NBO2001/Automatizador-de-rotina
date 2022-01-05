@@ -101,5 +101,5 @@ class GlobalConfig:
             create_folder(data['index'], data['boxs'])
         
         app_info.situation("Pegando as informações das pastas ... ") if app_info else print("Pegando as informações das pastas ... ")
-        create_json(convert_url("./config/folders"), verify_folders())
+        create_json(convert_url("./config/folders"), verify_folders(convert_url("./")))
 
