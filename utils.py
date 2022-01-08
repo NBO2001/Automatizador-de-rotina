@@ -50,7 +50,8 @@ def reading_json(name):
 def save_button(instance, validate = False):
 
     if validate:
-        element_is_clickable(instance,"//div[@class='actions']/div[2]/button")
+        if not element_is_clickable(instance,"//div[@class='actions']/div[2]/button"):
+            raise ConnectionError
 
     button_save = instance.driver.find_element_by_xpath("//div[@class='actions']/div[2]/button")
     button_save.click()
@@ -382,3 +383,37 @@ def insert_arq_log(texto):
         file.write(f'{date} : {texto} \n')
         file.close()
                 
+
+
+
+def alter_data_the_itens(origem, new_values):
+
+    # Define a posição inicial e cria a lista de posições
+    position = 0
+    position_list = list()
+
+    # Laço de repetição que econtra posições dos elementos
+    for ori in origem:
+        for _n in new_values:
+            if ori['index'] == _n['index']:
+                position_list.append(position)
+        
+        position += 1
+    
+    # Define a variavel que controla a quantidade de elementos apagados
+    dell = 0
+
+    # Apaga os items da lista
+    for _pos in position_list:
+
+        print(_pos)
+
+        origem.pop(_pos - dell)
+
+        dell += 1
+
+    # Adiciona os novos valores
+    for _ns in new_values:
+        origem.append(_ns)
+
+    return origem

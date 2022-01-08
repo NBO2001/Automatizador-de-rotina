@@ -25,8 +25,10 @@ def add_item(instance,data, app=False):
         
         moni[data['index']]['link'] = driving_to_box(instance, data['index'])
 
+        moni['link'] = (moni[data['index']]['link'])
 
         element_is_load(instance,"//mat-card/div/div[3]/mat-form-field[3]/div/div[1]/div/mat-select")
+
         try:
            boxs_add = add_folders(instance,data['boxs'],app)
         except Exception as error:
@@ -52,14 +54,12 @@ def add_item(instance,data, app=False):
                         try:
                             date_start = f'{box["date_start"].month}/{box["date_start"].day}/{box["date_start"].year}'
                         except Exception as error:
-                            insert_arq_log(f'{error}')
                             date_start = box["date_start"].split("/")
                             date_start = f'{date_start[1]}/{date_start[0]}/{date_start[2]}'
 
                         try:
                             date_end = f'{box["date_end"].month}/{box["date_end"].day}/{box["date_end"].year}'
                         except Exception as error:
-                            insert_arq_log(f'{error}')
                             date_end = box["date_end"].split("/")
                             date_end = f'{date_end[1]}/{date_end[0]}/{date_end[2]}'
 
@@ -87,11 +87,14 @@ def add_item(instance,data, app=False):
             moni['Error'] = True
             moni[data['index']]['dell'] = listDel
             insert_arq_log(f'{listDel}')
+            
             return moni
     except Exception as error:
         insert_arq_log(f'{error}')
         moni['Error'] = True
+        
         return moni
     else:
         moni['Error'] = False
-        return moni
+        
+        return moni 

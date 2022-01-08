@@ -1,38 +1,45 @@
 from time import sleep
 from utils import element_is_load, get_table, add_values_in_dictionary,trim
 
-def scrapping_b(instance, datas):
+def scrapping_b(instance, links):
     base_url = instance.get_urlBase()
     dic_values = dict()
 
     lista_values = list()
 
-    for data in datas:
-
-        link = datas[data]['link']
+    for link in links:
 
         instance.driver.get(f'{base_url}{link}')
         
         if not element_is_load(instance, "//mat-card/div/div[1]/mat-form-field[3]/div/div[1]/div/mat-select/div/div[1]/span/span"):
             return False
             
-        input_galpao = instance.driver.find_element_by_xpath("//mat-card/div/div[1]/mat-form-field[1]/div/div[1]/div/input")
-        local = input_galpao.get_attribute("value")
+        input_local = instance.driver.find_element_by_xpath("//mat-card/div/div[1]/mat-form-field[1]/div/div[1]/div/input")
+        local = input_local.get_attribute("value")
 
         input_galpao = instance.driver.find_element_by_xpath("//mat-card/div/div[1]/mat-form-field[2]/div/div[1]/div/mat-select/div/div[1]/span/span")
         galpao = input_galpao.get_attribute("innerHTML")
 
         input_prateleira = instance.driver.find_element_by_xpath("//mat-card/div/div[1]/mat-form-field[3]/div/div[1]/div/mat-select/div/div[1]/span/span")
         prateleira = input_prateleira.get_attribute("innerHTML")
+        
+        input_code= instance.driver.find_element_by_xpath("//mat-card/div/div[3]/mat-form-field[1]/div/div[1]/div/input")
+        _code = input_code.get_attribute("value")
+
+        input_type = instance.driver.find_element_by_xpath("//mat-card/div/div[3]/mat-form-field[2]/div/div[1]/div/mat-select/div/div[1]/span/span")
+        _type = input_type.get_attribute("innerHTML")
+
+        input_customer = instance.driver.find_element_by_xpath("//mat-card/div/div[3]/mat-form-field[3]/div/div[1]/div/mat-select/div/div[1]/span/span")
+        _customer = input_customer.get_attribute("innerHTML")
 
         dic_values = {
-            'index': data,
+            'index': _code,
             'link': link,
-            'type': datas[data]['type'],
+            'type': _type,
             'local': local,
             'galpao': galpao,
             'prateleira':prateleira,
-            'client': datas[data]['client']
+            'client': _customer
         }
         
         sleep(2)

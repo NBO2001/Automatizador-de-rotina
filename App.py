@@ -3,11 +3,20 @@ from GlobalConfig import GlobalConfig
 from login import Login
 from send_registers import send_rg_in_base
 from undoing_change import undoing
-from utils import convert_url, file_is_exists, create_json, insert_arq_log, reading_json
+from scan_informais_in_system import scan
+from utils import (
+    alter_data_the_itens,
+    convert_url, 
+    file_is_exists, 
+    create_json, 
+    insert_arq_log, 
+    reading_json,
+    )
 from reading_xml import update_xlsx
 from file_monitoration import plan_is_change
 from create_boxs import add_item
 from time import sleep
+from scrapping_boxs import scrapping_b
 from file_monitoration import folder_is_change
 from upload import conf_file_upload, up_files
 from SituationView import SituationView
@@ -87,7 +96,7 @@ class App:
         
 
     def plan_change(self):
-        self.isMapping = False
+        self.alters = list()
         try:
             self.app.situation("Lendo arquivos de configuração ...")
             dt = reading_json(convert_url('./config/boxs'))
@@ -115,25 +124,40 @@ class App:
             except Exception as error:
                 insert_arq_log(f'App: Row 115: {error}')
             
-            self.app.situation(f'Preparando para enviar {len(upl)} items')
-
-            self.isMapping = True
+            self.app.situation(f'Preparando para enviar {len(upl)} caixas')
 
             for up in upl:
 
                 resul = add_item(self.lg, up, self.app)
                 if resul['Error']:
+                    self.alters.append(resul['link'])
                     insert_arq_log(f'App: Row 126: {resul}')
                     undoing(self.lg,resul, self.app)
                     break
+                else:
+                    self.alters.append(resul['link'])
             
         except Exception as error:
             insert_arq_log(f'App: Row 123: {error}')
         finally:
-            if self.isMapping:       
-                self.app.situation(f'Mapiando as informações ...')    
-                self.conf.mapping_boxs(self.lg, self.app)
-                self.app.situation(f'Finalizado')   
+            if len(self.alters):       
+                self.app.situation(f'Mapiando as informações ...')   
+                lista_values = scrapping_b(self.lg, self.alters)
+                self.app.situation("Mapiando elementos ...") if self.app else print("Mapiando elementos ...")
+
+                dt = scan(self.lg, lista_values, self.app)
+
+                self.app.situation("Finalizado o mapiamento de elementos ...") if self.app else print("Finalizado o mapiamento de elementos ...") 
+
+                self.app.situation(f'Escrevendo mudanças') if self.app else print(f'Escrevendo mudanças')
+
+                origen = reading_json(convert_url('./config/boxs'))
+
+                _new_dic = alter_data_the_itens(origen, dt)
+
+                self.conf.configuration_arq_create(_new_dic, self.app) if self.app else  self.conf.configuration_arq_create(_new_dic) 
+
+                self.app.situation(f'Finalizado') if self.app else print(f'Finalizado')
 
     def send_rg(self):
         self.app.situation(f'Preparando para adicionar registros no sistema ...')
