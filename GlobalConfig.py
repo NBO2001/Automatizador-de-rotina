@@ -3,7 +3,8 @@ from sys import platform
 from utils import (
     convert_url, 
     create_folder, 
-    create_json, 
+    create_json,
+    file_is_exists, 
     reading_json, 
     verify_folders,
     insert_arq_log
@@ -18,13 +19,23 @@ from SetupWizard import SetupConfig
 class GlobalConfig:
 
     def __init__(self):
-        try:
-            self.global_ = reading_json(f'{convert_url("./config/Global")}')
-        except:
+        self.path = "/".join(((os.getcwd()).split('/'))[:3])
+        away = f'{self.path}/Global'
+        if file_is_exists(convert_url(f'{away}.json')):
+            self.global_ = reading_json(f'{convert_url(away)}')
+        else:
             if self.generation_config():
-                self.global_ = reading_json(f'{convert_url("./config/Global")}')
+                self.global_ = reading_json(f'{convert_url(away)}')
             else:
                 self.global_ = False
+
+        if file_is_exists(convert_url('./config/Local.json')):
+            self.local_ = reading_json(f'{convert_url(away)}')
+        else:
+            if self.generation_config("L"):
+                self.local_ = reading_json(f'{convert_url("./config/Local")}')
+            else:
+                self.local_ = False
                 
         self.platform = self.getSystem()
         
@@ -52,21 +63,44 @@ class GlobalConfig:
 
 
     def getClient(self):
-        return self.global_['client']
+        return self.local_['client']
 
 
-    def generation_config(self):
-        root = Tk()
-        myapp = SetupConfig(root)
-        root.mainloop()
+    def generation_config(self, conf="G"):
+        if conf == "G":
+            root = Tk()
+            myapp = SetupConfig(root, conf)
+            myapp.add_Global()
+            root.mainloop()
 
-        dt_my = myapp.getData()
-        if len(dt_my):
-            create_folder('config', {}, convert_url("./"))
-            create_json(f'{convert_url("./config/Global")}', dt_my)
-            return True
-        else:
-            return False
+            path = "/".join(((os.getcwd()).split('/'))[:3])
+
+            dt_my = myapp.getData()
+            dt_loc = myapp.getLocal()
+            if len(dt_my):
+                create_folder('config', {}, convert_url("./"))
+                pht = f'{self.path}/Global'
+                create_json(f'{convert_url(pht)}', dt_my)
+                create_json(f'{convert_url("./config/Local")}', dt_loc)
+                return True
+            else:
+                return False
+        
+        if conf == "L":
+            root = Tk()
+            myapp = SetupConfig(root, conf)
+            root.mainloop()
+
+            dt_my = myapp.getLocal()
+
+            if len(dt_my):
+                create_folder('config', {}, convert_url("./"))
+                
+                create_json(f'{convert_url("./config/Local")}', dt_my)
+
+                return True
+            else:
+                return False
 
     def mapping_boxs(self, instance, app=False):
         app_info = app

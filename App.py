@@ -50,7 +50,7 @@ class App:
                 self.app.situation("Esperando página carregar ...")
             
                 try:
-                    self.lg = Login(self.conf.getUrlBase(),self.conf.getUser(),self.conf.getPassword(), self.conf.getClient(), True, self.app)
+                    self.lg = Login(self.conf.getUrlBase(),self.conf.getUser(),self.conf.getPassword(), self.conf.getClient(), False, self.app)
                 except Exception as erro:
                     insert_arq_log(f'{erro}')
                     self.app.situation(f'Error: {erro.__cause__}')
